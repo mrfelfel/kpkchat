@@ -1,0 +1,16 @@
+{
+  "name": "kpkchat",
+  "version": "1.0.0",
+  "description": "anonymouse chat telegram bot programing by 0tasad team",
+  "main": "index.js",
+  "repository": "https://github.com/mrfelfel/kpkchat.git",
+  "author": "mrfelfel <qazvinyjavad@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.7.2",
+    "dotenv": "^17.2.4",
+    "mongoose": "^9.1.6",
+    "node-telegram-bot-api": "^0.67.0",
+    "redis": "^5.10.0"
+  }
+}
