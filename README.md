@@ -1,158 +1,113 @@
-# KPKChat — Telegram Anonymous Chat Bot
+# KPKChat — Anonymous Chat Telegram Bot
 
-KPKChat is a simple anonymous random chat bot for Telegram.  
-It connects users randomly and lets them chat without revealing their identity.
-
-Built with **Node.js**, **Telegram Bot API**, **Redis**, and **MongoDB**.
-
----
+Random anonymous 1-on-1 chat bot for Telegram with interest-based matching, chat ratings, and anonymous confessions.
 
 ## Features
 
-- Anonymous 1‑to‑1 random chat
-- Gender selection before matching
-- Real‑time message forwarding
-- Supports text, photo, video, voice, sticker, audio, and documents
-- User state management with Redis
-- Chat history stored in MongoDB
-- Block user after chat
-- Basic anti‑spam limit (search cooldown)
-- Graceful shutdown handling
+- **Interest-based matching** — users select topics, matched by shared interests
+- **Chat ratings** — rate your chat partner after each conversation (1-5 stars)
+- **Anonymous confessions & questions** — post to a Telegram channel anonymously
+- **Full media support** — text, photo, video, voice, sticker, audio, document, GIF, video note
+- **Gender selection** — male/female before first chat
+- **Block system** — block annoying partners after chat ends
+- **Anti-spam** — 1-minute cooldown between searches
+- **State machine** — Redis-backed user state management
 
----
+## Tech Stack
+
+- **Runtime:** Node.js + TypeScript
+- **Bot:** node-telegram-bot-api
+- **Database:** MongoDB (mongoose)
+- **State:** Redis
 
 ## Project Structure
 
 ```
 kpkchat/
-├── index.js        # Main bot logic and message handling
-├── connect.js      # MongoDB connection (mongoose)
-├── users.js        # User model and user-related queries
-├── chat.js         # Chat storage and history logic
-├── package.json    # Project metadata and dependencies
-├── yarn.lock
-├── .env.example    # Environment variables example
+├── src/
+│   ├── index.ts              # Main entry & message routing
+│   ├── db.ts                 # MongoDB connection
+│   ├── config.ts             # Redis client & helpers
+│   ├── keyboards.ts          # Telegram keyboard layouts
+│   ├── types.ts              # Shared TypeScript types
+│   ├── models/
+│   │   ├── user.ts           # User schema & interests
+│   │   ├── chat.ts           # Chat message storage
+│   │   └── confession.ts     # Anonymous confessions
+│   └── handlers/
+│       ├── start.ts          # /start, gender, interests setup
+│       ├── search.ts         # Random matching with interest filter
+│       ├── chat.ts           # Message forwarding
+│       ├── rating.ts         # Post-chat rating & close
+│       └── confession.ts     # Anonymous confessions/questions
+├── package.json
+├── tsconfig.json
+├── .env.example
 └── README.md
 ```
 
----
+## Setup
 
-## Requirements
+### Prerequisites
 
-- Node.js v18+
+- Node.js 18+
 - Redis
 - MongoDB
-- Telegram Bot Token (from BotFather)
+- Telegram Bot Token (from @BotFather)
 
----
+### Install
 
-## Installation
-
-### 1. Clone the repository
 ```bash
 git clone https://github.com/mrfelfel/kpkchat.git
 cd kpkchat
-```
-
-### 2. Install dependencies
-```bash
 npm install
-# or
-yarn install
 ```
 
-### 3. Environment variables
-
-Create a `.env` file based on `.env.example`:
-
-```env
-TELEGRAM_BOT_TOKEN=YOUR_TELEGRAM_BOT_TOKEN
-REDIS_URL=redis://localhost:6379
-MONGODB_URI=mongodb://localhost:27017/kpkchat
-```
-
----
-
-## Run the Bot
+### Configure
 
 ```bash
-node index.js
+cp .env.example .env
 ```
 
-After startup, the bot will connect to:
-- Telegram (polling mode)
-- Redis (user state & limits)
-- MongoDB (users and chat history)
+Edit `.env` with your tokens. To enable anonymous confessions, create a Telegram channel, add the bot as admin, and set `CONFESSION_CHANNEL_ID`.
 
----
+### Run
 
-## How It Works (Simple Flow)
+```bash
+npm run build
+npm start
 
-1. User sends `/start`
-2. Bot registers the user if new
-3. User selects gender (once)
-4. User starts search
-5. Bot matches two available users
-6. Messages are forwarded between them
-7. Chat ends → user can block partner
-
----
-
-## Data Storage
-
-### Redis
-Used for:
-- User location (home, search, chat, blocking)
-- User step (searching, chatting, gender selection)
-- Search rate limit
-- Temporary states
-
-### MongoDB
-Used for:
-- User profiles
-- Chat messages
-- Chat statistics
-
----
-
-## Broadcast Message
-
-The bot includes a broadcast helper:
-
-```js
-sendToAllUsers()
+# or dev mode
+npm run dev
 ```
 
-Sends a message to all registered users with rate‑limit safety.
+## How It Works
 
----
+1. User sends `/start` → registers if new
+2. Selects gender (once)
+3. Selects interest topics (up to 5)
+4. Hits "🔗 وصلم کن!" to search
+5. Bot matches by shared interests (fallback: any available user)
+6. Shows shared interest tag on match
+7. Messages forwarded in real-time
+8. "🛑 قطع مکالمه" ends chat → both users rate each other
+9. Optional: block partner after rating
 
-## Error Handling
+## Anonymous Confessions
 
-- Redis connection errors
-- MongoDB connection recovery
-- Telegram polling errors
-- Graceful shutdown on `SIGINT`
+- Set `CONFESSION_CHANNEL_ID` in `.env`
+- Users tap "💬 اعتراف ناشناس" or "❓ سوال ناشناس"
+- Write their text → posted to the channel anonymously
 
----
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `TELEGRAM_BOT_TOKEN` | Bot token from @BotFather |
+| `REDIS_URL` | Redis connection URL |
+| `MONGODB_URI` | MongoDB connection URI |
+| `CONFESSION_CHANNEL_ID` | Channel ID for confessions (optional) |
 
 ## License
 
-MIT License  
-You are free to use, modify, and distribute this project.
-
----
-
-## Author
-
-**mrfelfel**  
-Email: qazvinyjavad@gmail.com  
-GitHub: https://github.com/mrfelfel
-
----
-
-## Privacy
-
-This bot does not expose user identities.  
-Chats are stored only for moderation and statistics purposes.
-
+MIT
